@@ -3,7 +3,6 @@
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
 ![Statistics](https://img.shields.io/badge/Statistics-Hypothesis%20Testing-6c757d)
 ![A/B Testing](https://img.shields.io/badge/A%2FB%20Testing-6c757d)
-![Data Analysis](https://img.shields.io/badge/Data%20Analysis-6c757d)
 
 ## Overview
 
