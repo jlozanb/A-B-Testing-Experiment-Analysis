@@ -85,6 +85,10 @@ user data.
   small-transfer drop-off as a real cost worth a follow-up experiment
   (e.g. a lighter breakdown for small transfers), and monitor by segment
   after launch rather than only on the aggregate number
+
+  ![Completion rate by segment](images/segment_reversal.png)
+  ![Satisfaction distribution](images/satisfaction_distribution.png)
+
  
 ## Project Purpose
 
