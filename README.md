@@ -109,9 +109,6 @@ wrong decision.
 │   ├── segment_reversal.png
 │   └── satisfaction_distribution.png
 │
-├── requirements.txt
-├── LICENSE
-├── .gitignore
 └── README.md
 ```
  
