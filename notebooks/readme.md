@@ -1,73 +1,85 @@
+# Notebook: AB_Test_Fee_Transparency.ipynb
 
-# Notebooks: AB_Test_Fee_Transparency.ipynb
-
-Walkthrough of what each section of the notebook does, why it's there, and
-what it concludes. The notebook is already executed with its outputs and
-charts saved, so it can be read directly on GitHub without needing to run
-it.
+Quick walkthrough of what's in this notebook and why I did each part. The
+notebook is already run, with all outputs and charts saved, so you can
+read it directly on GitHub without running it again.
 
 ## 1. Business question and hypotheses
-States the experiment upfront: what's being compared, what the primary
-metric is, what the guardrail metrics are, and the significance level.
-This is written before any data is loaded, on purpose: the hypothesis and
-the metric are decided in advance, not chosen after seeing what "worked".
+
+First I write what I am comparing, what the main metric is, what the
+guardrail metrics are, and the significance level I am using. I do this
+before loading any data, because the metric and the hypothesis need to be
+decided in advance, not chosen later after seeing the results.
 
 ## 2. Load and inspect the data
-Basic checks: shape, dtypes, missing values. Confirms that the only
-missing values are `satisfaction_score` and `repeated_within_30d` for
-transfers that were never completed, which is expected.
+
+Basic checks here: shape, data types, missing values. The only missing
+values are in `satisfaction_score` and `repeated_within_30d`. This only
+happens for transfers that were never completed, which makes sense,
+because you cannot rate a transfer that did not happen.
 
 ## 3. Sanity checks before trusting the results
-Two checks that have to pass before any comparison between groups means
-anything:
-- **Sample Ratio Mismatch (SRM):** a chi-square test comparing the actual
-  group sizes to the expected 50/50 split. If this fails, the
-  randomization itself is broken and no downstream result can be trusted.
-- **Duplicate and range checks:** no duplicate transfer IDs, dates fall
-  inside the expected experiment window, and the amount tier split is
-  balanced across groups.
+
+Before comparing the groups, I run two checks that need to pass first:
+
+- **Sample Ratio Mismatch (SRM):** a chi square test that compares the
+  real group sizes to the expected 50/50 split. If this test fails, it
+  means the randomization is broken, and none of the results after this
+  can be trusted.
+- **Duplicate and range checks:** no duplicate transfer IDs, all dates
+  inside the experiment period, and the amount tier split balanced
+  between groups.
 
 ## 4. Overall completion rate (the topline number)
-Computes the aggregate conversion rate for each group and runs a
-two-proportion z-test. Result: the difference is small and not
-statistically significant (p = 0.24). Taken alone, this section would
-lead to "the treatment made no difference."
+
+Here I calculate the overall conversion rate for each group and run a two
+proportion z test. Result: the difference is small and not statistically
+significant (p = 0.24). If you only look at this number, you would say
+the treatment made no difference. But this is not the full picture.
 
 ## 5. Segmenting by transfer size
-Splits the same comparison by `amount_tier` and reruns the z-test inside
-each segment. This is the core of the analysis: it shows the topline
-number was hiding two real, statistically significant effects in opposite
-directions (small transfers down, large transfers up). The notebook is
-explicit that this segment was decided before looking at the results, not
-picked afterward to explain a null finding, since that distinction is what
-separates a valid segment analysis from p-hacking.
+
+I split the same comparison by `amount_tier` and run the z test again for
+each segment. This is the most important part of the analysis, because
+the overall number was hiding two effects that go in different directions
+(small transfers went down, large transfers went up), and both are
+statistically significant. I decided to look at this segment before
+seeing the results, not after, just to find an explanation for a null
+result. This is important, because deciding the segment in advance is
+what makes this a real analysis and not p hacking.
 
 ## 6. Guardrail metrics
-Checks satisfaction score (t-test) and 30-day repeat rate (two-proportion
-z-test) between groups, restricted to completed transfers. Both favor the
-treatment clearly. This section exists to catch a case where optimizing
-the primary metric alone would have led to a worse decision for the
-business.
+
+I check the satisfaction score (t test) and the 30 day repeat rate (two
+proportion z test) between groups, only for completed transfers. Both
+metrics are better for the treatment group. I added this check because
+looking only at completion rate could hide a problem, for example if the
+treatment increased completions but made customers less satisfied. That
+did not happen here, both guardrail metrics look fine.
 
 ## 7. Conclusion and recommendation
-Turns the statistical results into one business recommendation: ship the
-transparency treatment, but treat the small-transfer drop-off as a real,
-worth-addressing cost rather than ignoring it, and keep monitoring by
-segment after launch instead of only watching the aggregate number.
+
+My recommendation is to launch the transparency treatment. But the drop
+in small transfers is a real cost and should not be ignored. I would also
+keep monitoring the results by segment after launch, instead of only
+looking at the overall number, because that is what hid the effect in
+the first place.
 
 ## 8. Limitations
-Explicit list of what a more rigorous version of this analysis would add:
-correction for multiple comparisons, modeling the guardrail metrics'
-conditional-on-completion structure instead of just noting it, and
-replicating the result in a second time period before treating it as a
-stable effect.
 
-## Key libraries used and why
+Things I would add to make this analysis more complete: a correction for
+multiple comparisons, a better way to model the guardrail metrics (right
+now I only mention that they depend on completion, but I do not model
+this), and testing the result again in a second time period before saying
+it is a stable effect.
+
+## Key libraries used
+
 - `scipy.stats.chisquare` for the Sample Ratio Mismatch check
-- `statsmodels.stats.proportion.proportions_ztest` for all the binary
-  metric comparisons (completion rate, repeat rate)
-- `scipy.stats.ttest_ind` (Welch's t-test, `equal_var=False`) for the
-  continuous satisfaction score comparison
-- `matplotlib` for all charts, kept deliberately simple (bar charts and
-  histograms), since the goal here is clear communication of the result,
-  not visual complexity
+- `statsmodels.stats.proportion.proportions_ztest` for the binary metric
+  comparisons (completion rate, repeat rate)
+- `scipy.stats.ttest_ind` (Welch's t test, `equal_var=False`) for the
+  satisfaction score comparison
+- `matplotlib` for the charts. I kept them simple on purpose (bar charts
+  and histograms), because the goal here is to communicate the result
+  clearly, not to make it look impressive
