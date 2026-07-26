@@ -5,21 +5,21 @@
 ![Hypothesis Testing](https://img.shields.io/badge/Hypothesis%20Testing-6c757d)
 ![A/B Testing](https://img.shields.io/badge/A%2FB%20Testing-6c757d)
 ![Data Visualization](https://img.shields.io/badge/Data%20Visualization-6c757d)
- 
+
 ## Overview
 
-Statistical experimentation project evaluating a business decision through a
-controlled A/B test: whether showing the full fee and exchange rate
-breakdown on an international transfer changes user behavior, compared to
-showing only the final amount received. The project covers experiment
-validity checks, the topline result, a segment analysis that reverses the
-topline conclusion (a Simpson's paradox pattern), and guardrail metrics
-that inform the final recommendation.
- 
-All data used in this project is synthetic, generated to reflect a
-realistic fintech remittance scenario without exposing any real company or
+This project is an A/B test that looks at a real business question: does
+showing the full fee and exchange rate breakdown on an international
+transfer change user behavior, compared to only showing the final amount
+received. The project includes checks to make sure the experiment is
+valid, the main result, a segment analysis that actually reverses the main
+result (a Simpson's paradox pattern), and guardrail metrics that help
+decide the final recommendation.
+
+All the data used here is synthetic. I generated it to look like a
+realistic fintech remittance scenario, without using any real company or
 user data.
- 
+
 ## Experiment design
 
 - **Control (A):** only the final amount received is shown
@@ -27,32 +27,31 @@ user data.
   applied, fee, final amount)
 - **Primary metric:** transfer completion rate
 - **Segment:** transfer amount (small, under $200 vs large, $200 and up)
-- **Guardrail metrics:** post-transaction satisfaction score (0-10) and
-  30-day repeat transfer rate
-- **Randomization:** 50/50 split, ~5,000 transfers per group
+- **Guardrail metrics:** post transaction satisfaction score (0 to 10) and
+  30 day repeat transfer rate
+- **Randomization:** 50/50 split, around 5,000 transfers per group
 - **Duration:** 4 weeks
-- **Significance level:** 5%, two-sided, decided before looking at results.
-  The transfer-size segment split was also decided in advance, based on
-  the business reasoning that a fee matters more, relatively, on a small
-  transfer than a large one
+- **Significance level:** 5%, two sided, decided before looking at the
+  results. I also decided the transfer size segment in advance, because a
+  fee matters more, relatively, on a small transfer than on a large one
 
 ## Features
 
 - Sample Ratio Mismatch (SRM) check before trusting the results
-- Topline (aggregate) two-proportion z-test for the primary metric
-- Pre-registered segment analysis by transfer size, showing the topline
-  result was masking two real, opposite effects (a textbook Simpson's
-  paradox pattern)
-- Guardrail metric analysis (satisfaction, repeat usage) to check whether
-  optimizing the primary metric alone would have been the wrong call
-- Explicit discussion of the difference between statistical and practical
-  significance, and of the risk of exploratory segment hunting vs
-  pre-registered segment analysis
+- Overall two proportion z test for the primary metric
+- Segment analysis by transfer size, decided before running the test,
+  showing that the overall result was hiding two real, opposite effects
+  (a classic Simpson's paradox pattern)
+- Guardrail metric analysis (satisfaction, repeat usage) to check if
+  focusing only on the primary metric would have led to the wrong
+  decision
+- A short discussion of the difference between statistical significance
+  and practical significance, and why deciding the segment in advance
+  matters (to avoid p hacking)
 
 ## Technologies
 
 - Python (pandas, numpy)
-
 - SciPy and statsmodels for hypothesis testing
 - Matplotlib for visualization
 - Jupyter Notebook
@@ -63,42 +62,43 @@ user data.
   (`data/fee_transparency_ab_test_data.csv`)
 - Load and inspect the data, checking for data quality issues
 - Check the sample split for Sample Ratio Mismatch
-- Compute the topline (aggregate) completion rate and run the primary
-  hypothesis test
-- Break the result down by transfer size and re-run the test within each
+- Calculate the overall completion rate and run the main hypothesis test
+- Break the result down by transfer size and run the test again for each
   segment
-- Analyze the guardrail metrics (satisfaction, 30-day repeat rate)
-- Summarize the result into a business recommendation, including what it
-  would take to capture the upside without the small-transfer cost
+- Look at the guardrail metrics (satisfaction, 30 day repeat rate)
+- Turn the results into a business recommendation, including what it
+  would take to keep the benefits without the small transfer cost
 
 ## Results
 
-- **Topline:** 78.9% (control) vs 79.6% (treatment), not statistically
-  significant (p = 0.24) — taken alone, this would say "no effect"
-- **Segmented by transfer size:** small transfers drop by 3.9 pp with
-  transparency (statistically significant), large transfers gain 5.3 pp
-  (statistically significant) — the topline number was hiding two real,
-  opposite effects
-- **Guardrail metrics:** satisfaction and 30-day repeat rate both improve
-  clearly with transparency, regardless of transfer size
-- **Recommendation:** ship the transparency treatment, but treat the
-  small-transfer drop-off as a real cost worth a follow-up experiment
-  (e.g. a lighter breakdown for small transfers), and monitor by segment
-  after launch rather than only on the aggregate number
+- **Overall result:** 78.9% (control) vs 79.6% (treatment), not
+  statistically significant (p = 0.24). If you only look at this number,
+  you would say the treatment made no difference.
+- **By transfer size:** small transfers drop by 3.9 percentage points
+  with the transparency treatment (statistically significant), large
+  transfers gain 5.3 percentage points (also statistically significant).
+  The overall number was hiding these two opposite effects.
+- **Guardrail metrics:** both satisfaction and 30 day repeat rate improve
+  clearly with the transparency treatment, for both small and large
+  transfers.
+- **Recommendation:** launch the transparency treatment, but treat the
+  drop in small transfers as a real cost that deserves a follow up test
+  (for example, a lighter version of the breakdown for small transfers).
+  Keep monitoring results by segment after launch, not only the overall
+  number.
 
   ![Completion rate by segment](images/segment_reversal.png)
   ![Satisfaction distribution](images/satisfaction_distribution.png)
 
- 
 ## Project Purpose
 
-The objective of this project was to demonstrate a level of A/B test
-analysis that goes past reading a single p-value: checking experiment
-validity first, understanding when and why to pre-register a segment
-split instead of hunting for one after the fact, and using guardrail
+The goal of this project was to show A/B test analysis that goes beyond
+just reading one p value. This means checking if the experiment is valid
+first, understanding why you should decide a segment split in advance
+instead of looking for one after seeing the data, and using guardrail
 metrics to catch cases where the primary metric alone would lead to the
 wrong decision.
- 
+
 ## Repository Contents
 ```
 ├── data
